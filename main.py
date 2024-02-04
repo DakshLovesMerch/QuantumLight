@@ -35,7 +35,16 @@ circuit.h(qreg_q[2])
     # Portion to convert the circuit
 qiskit_converter = QiskitConverter(pcvl.catalog, backend_name="Naive")
 quantum_processor = qiskit_converter.convert(circuit, use_postselection=True)
-
+mapping = {pcvl.BasicState('|1,0,1,0,1,0>'): '000',
+               pcvl.BasicState('|1,0,1,0,0,1>'): '001',
+               pcvl.BasicState('|1,0,0,1,1,0>'): '010',
+               pcvl.BasicState('|1,0,0,1,0,1>'): '011',
+               pcvl.BasicState('|0,1,1,0,1,0>'): '100',
+               pcvl.BasicState('|0,1,1,0,0,1>'): '101',
+               pcvl.BasicState('|0,1,0,1,1,0>'): '110',
+               pcvl.BasicState('|0,1,0,1,0,1>'): '111'}
+target = {"000": "000", "001": "001", "010": "010", "011": "011",
+              "100": "100", "101": "101", "110": "111", "111": "110"}
     # Portion to print out the circuit must ignore/delete
     # pcvl.pdisplay(quantum_processor, recursive=False)
 def get_CCZ() -> quantum_processor:
