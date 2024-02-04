@@ -1,37 +1,31 @@
 import perceval as pcvl
-from perceval.components import catalog
-from perceval.converters import QiskitConverter, MyQLMConverter
-from perceval.algorithm import Analyzer, Sampler
+import auto_grader
+import math
+pcvl.catalog["postprocessed ccz"].build_processor
+def get_CCZ() -> pcvl.Processor:
+    return pcvl.catalog["postprocessed_ccz"].build_processor()
+auto_grader.n_photons=1203103123012931
+auto_grader.n_modes=10221525125
 
-from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
 
-qiskit_circuit = QuantumCircuit(3)
+states={pcvl.BasicState('|1,0,1,0,1,0>'): '000',
+        pcvl.BasicState('|1,0,1,0,0,1>'): '001',
+        pcvl.BasicState('|1,0,0,1,1,0>'): '010',
+        pcvl.BasicState('|1,0,0,1,0,1>'): '011',
+        pcvl.BasicState('|0,1,1,0,1,0>'): '100',
+        pcvl.BasicState('|0,1,1,0,0,1>'): '101',
+        pcvl.BasicState('|0,1,0,1,1,0>'): '110',
+        pcvl.BasicState('|0,1,0,1,0,1>'): '111'}
 
-qiskit_circuit.h(0)
 
-qiskit_circuit.cx(0, 1)
-qiskit_circuit.cx(0, 2)
-qiskit_circuit.draw()
+target={"000": "000", "001": "001", "010": "010", "011": "011",
+              "100": "100", "101": "101", "110": "111", "111": "110"}
 
-state = Statevector.from_int(0, 2**3)
 
-state = state.evolve(qiskit_circuit)
+ca = pcvl.algorithm.Analyzer(pcvl.catalog["postprocessed ccz"].build_processor(), states)
 
-state.draw('latex')
-qiskit_converter = QiskitConverter(catalog, backend_name="Naive")
-quantum_processor = qiskit_converter.convert(qiskit_circuit, use_postselection=True)
-pcvl.pdisplay(quantum_processor, recursive=True)
-quantum_processor.with_input(pcvl.LogicalState([0,0,0]))
+ca.compute(target)
 
-sampler = Sampler(quantum_processor)
+print(ca.performance)
 
-output_distribution = sampler.probs()["results"]
-pcvl.pdisplay(output_distribution, precision=1e-2, max_v = 4)
-u = quantum_processor.linear_circuit().compute_unitary(use_symbolic=False)
-ub = (pcvl.Circuit(2)
-      // pcvl.BS(theta=pcvl.Parameter("theta"))
-      // (0, pcvl.PS(phi=pcvl.Parameter("φ_a"))))
-
-pc_norm = pcvl.Circuit.decomposition(u, ub, shape="triangle")
-pcvl.pdisplay(pc_norm, compact=True, render_size=0.5)
+print(ca.fidelity)
